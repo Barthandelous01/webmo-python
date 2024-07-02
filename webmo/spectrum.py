@@ -446,3 +446,35 @@ def construct_spectrum(points, intensities, lineshape="gauss", width=10, start=0
         l.append(tmp)
 
     return((axis,np.array(l).sum(axis=0)))
+
+def to_integrated_absorbance(value, temp=298.0, pressure=20.0, path_length=10.0):
+    """Convert a km/mol absorbance value into integrated absorbance
+
+    This function converts between a base-e intensity with values given in
+    kilometers per mole to a base ten integrated absorbance value. This function
+    assumes a gas phase that follows the ideal gas law. Temperature
+    is specified in Kelvin, pressure is given in Torr, and path length is given
+    in centimeters.
+
+    Arguments:
+    	value(float): the intensity value in km/mole
+    	temp(float,optional): the temperature of the gas in question, in Kelvin
+    	pressure(float,optional): the pressure the gas is at, in Torr
+    	path_length(float,optional): the path length of the cell, in cm
+
+    Returns:
+    	the integrated absorbance (that is, area underneath the curve) of the
+    	peak with the specified intensity
+    """
+
+    # numerical density
+    R = 62363.57688 # cm^3 torr / K mol
+    n_V = 1/(R * temp)
+    V_n = 1/n_V
+
+    base_e = 2.302585092994045684 # 1/log10(e)
+
+    # do the actual conversion
+    neum = value * 1e5 * pressure * path_length * V_n
+
+    return neum/base_e # final conversion
